@@ -43,8 +43,10 @@ fn parse_op(c: u8) -> Op {
 }
 
 fn print_s(buffer: u8[>..]&) {
-    write_stdout(buffer);
-    buffer.resize(0);
+   if buffer.len > 0 {
+      write_stdout(buffer);
+   }
+   buffer.resize(0);
 }
 
 fn execute(ops: Op..&[>..]&) {
@@ -54,6 +56,8 @@ fn execute(ops: Op..&[>..]&) {
     var i=0;
 
     var buffer: u8[>..] = [];
+    var _in: u8[>..] = [];
+    var in_position=0;
     while pc < ops.len {
         let op = ops[pc];
         // if head >= 0 {
@@ -70,23 +74,33 @@ fn execute(ops: Op..&[>..]&) {
             Jnz off => { if mem[head] != 0 { pc = off.off; } },
             Out     => {
                 let c = mem[head];
-                if c != '\n' {
-                    buffer.push(c);
-                } else {
-                    print_s(buffer);
-                }
+                buffer.push(c);
+                print_s(buffer);
             },
             In      => {
                 print_s(buffer);
-                fatal("In not implemented, yet.");
+                if _in.len == 0 {
+                  read_stdin(_in);
+                  if _in.len == 0 {
+                     fatal("Read from stdin returned nothing ?!?")
+                  }
+                }
+                if in_position == _in.len {
+                  read_stdin(_in);
+                  if in_position == _in.len {
+                     // EOF reached?
+                     mem[head] = 0;
+                  }
+                } else {
+                  mem[head] = _in[in_position];
+                  in_position++;
+                }
             },
             _       => { fatal("Not implemented yet!"); },
         }
         pc++;
     }
-    if buffer.len > 0 {
-        print_s(buffer);
-    }
+    print_s(buffer);
 }
 
 fn main() {
