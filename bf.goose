@@ -43,7 +43,7 @@ fn parse_op(c: u8) -> Op {
 }
 
 fn print_s(buffer: u8[>..]&) {
-    print(buffer);
+    write_stdout(buffer);
     buffer.resize(0);
 }
 
@@ -94,7 +94,7 @@ fn main() {
     if arg_count() > 1 { arg(1, path); } else { arg(0, path); usage(path, "Provide source file"); }
     var src: u8[>..] = [];
     guard read_file(path, src) else { print("cannot read ", path); exit(1); }
-    print("source:\n", src);
+    // print("source:\n", src);
 
     var ops: Op..[>..] = [];
     // references to elements in ops since variable arrays are not indexable
